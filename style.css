@@ -2,6 +2,7 @@
     border: 1px solid #ccc;
     text-align: center;
     height: 100%;
+    width: auto;
     
 }
 
@@ -10,7 +11,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 0.5rem;
+    margin: 0;
+    width: 100%;
 }
 
 menu {

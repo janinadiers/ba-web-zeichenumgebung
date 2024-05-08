@@ -11,8 +11,12 @@
 <body>
     <div class="container">
         <menu>
+            <button id="zoomIn">Zoom In</button>
+            <button id="zoomOut">Zoom Out</button>
             <h1>Draw a Petri net</h1>
             <button id="download">Download in inkML Format</button>
+            <input type="file" id="fileInput" style="display: none;" accept=".inkml">
+            <button onclick="document.getElementById('fileInput').click();">Upload .inkml File</button>
         </menu>
         <canvas id="myCanvas" resize></canvas>
     </div>

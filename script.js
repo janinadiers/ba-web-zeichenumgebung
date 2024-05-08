@@ -3,11 +3,26 @@ import {exportToInkML, download} from './export.js';
 document.addEventListener('DOMContentLoaded', function() {
     let canvas = document.getElementById('myCanvas');
     let downloadButton = document.getElementById('download');
+    // Attach event listeners to buttons
+    document.getElementById('zoomIn').addEventListener('click', zoomIn);
+    document.getElementById('zoomOut').addEventListener('click', zoomOut);
 
     paper.setup(canvas);
     let tool = new paper.Tool();
     let path;
     let traces = [];
+
+    // Function to handle zoom in
+    function zoomIn() {
+        paper.view.scale(1.1, paper.view.center); // Zoom in by 10%
+    }
+
+    // Function to handle zoom out
+    function zoomOut() {
+        paper.view.scale(0.9, paper.view.center); // Zoom out by 10%
+    }
+
+    
 
     if (window.devicePixelRatio) {
         canvas.width = canvas.offsetWidth * window.devicePixelRatio;
@@ -56,6 +71,84 @@ document.addEventListener('DOMContentLoaded', function() {
         let inkML = exportToInkML(traces);
         download('drawing.inkml', inkML);
     });
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        
+        // Everytime a new file is uploaded, we want to have a clean canvas
+        paper.project.clear();
+
+        const file = event.target.files[0];
+        if (!file) {
+          return;
+        }
+        // Now you can do something with the file, e.g., read it
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            // Process the .inkml file content here
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(fileContent, 'text/xml');
+            const traces = xml.querySelectorAll('trace');
+
+            let allPoints = [];
+            // // Loop durch die Spuren und zeichne sie auf den Canvas
+            traces.forEach((trace, index) => {
+                const points = trace.textContent.trim().split(',').map(point => {
+                    const [x, y, ...rest] = point.split(' ').filter(item => item.trim() !== '');                    
+                    return new paper.Point(parseFloat(x), parseFloat(y));
+                })
+                allPoints = allPoints.concat(points);
+                // const path = new paper.Path({
+                //     segments: points,
+                //     strokeColor: 'black',
+                //     strokeWidth: 2
+                // });
+            
+                
+            });
+            // Now calculate the bounding box for all points
+            const minX = Math.min(...allPoints.map(point => point.x));
+            const maxX = Math.max(...allPoints.map(point => point.x));
+            const minY = Math.min(...allPoints.map(point => point.y));
+            const maxY = Math.max(...allPoints.map(point => point.y));
+
+            // Scaling for the entire drawing
+            const width = maxX - minX;
+            const height = maxY - minY;
+            const scaleX = canvas.getBoundingClientRect()['width'] / width;
+            const scaleY = canvas.getBoundingClientRect()['height'] / height;
+            const scale = Math.min(scaleX, scaleY);
+
+            // mittig setzen
+            const offsetX = (canvas.getBoundingClientRect()['width'] - width * scale) / 2;
+            const offsetY = (canvas.getBoundingClientRect()['height'] - height * scale) / 2;
+
+            
+            // Then draw each trace with points transformed based on the calculated scale
+            traces.forEach(trace => {
+                const points = trace.textContent.trim().split(',').map(point => {
+                    const [x, y] = point.split(' ').filter(item => item.trim() !== '');
+                    const scaledX = (parseFloat(x) - minX) * scale + offsetX;
+                    const scaledY = (parseFloat(y) - minY) * scale + offsetY;
+                    return new paper.Point(scaledX, scaledY);
+                });
+
+                // Create and draw the path
+                const path = new paper.Path({
+                    segments: points,
+                    strokeColor: 'black',
+                    strokeWidth: 2,
+                    fullySelected: false
+                });
+            });
+
+            paper.view.draw();
+            zoomOut();
+            
+        };
+        reader.readAsText(file); // Reads the file's content as a text string
+    });  
+ 
 });
 
 
