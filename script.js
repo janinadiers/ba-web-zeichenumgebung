@@ -92,18 +92,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let allPoints = [];
             // // Loop durch die Spuren und zeichne sie auf den Canvas
-            traces.forEach((trace, index) => {
-                const points = trace.textContent.trim().split(',').map(point => {
-                    const [x, y, ...rest] = point.split(' ').filter(item => item.trim() !== '');                    
-                    return new paper.Point(parseFloat(x), parseFloat(y));
+            traces.forEach((trace) => {
+                trace = trace.textContent.split(',').filter(item => item.trim() !== '');
+                const points = trace.map(point => {
+                    const [x, y, ...rest] = point.split(' ').filter(item => item.trim() !== '');                                       
+                    return new paper.Point(parseFloat(x), parseFloat(y)); 
+                   
                 })
                 allPoints = allPoints.concat(points);
-                // const path = new paper.Path({
-                //     segments: points,
-                //     strokeColor: 'black',
-                //     strokeWidth: 2
-                // });
-            
                 
             });
             // Now calculate the bounding box for all points
@@ -111,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxX = Math.max(...allPoints.map(point => point.x));
             const minY = Math.min(...allPoints.map(point => point.y));
             const maxY = Math.max(...allPoints.map(point => point.y));
-
             // Scaling for the entire drawing
             const width = maxX - minX;
             const height = maxY - minY;
@@ -132,13 +127,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     const scaledY = (parseFloat(y) - minY) * scale + offsetY;
                     return new paper.Point(scaledX, scaledY);
                 });
-
                 // Create and draw the path
                 const path = new paper.Path({
                     segments: points,
                     strokeColor: 'black',
                     strokeWidth: 2,
                     fullySelected: false
+                });
+
+                path.segments.map(function(segment) {
+                    new paper.Path.Circle({
+                        center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
+                        radius: 2,       // Radius of the circle
+                        fillColor: 'red'  // Color of the circle
+                    });
+                    // traces.push([segment.point.x, segment.point.y]);
+                    // Draw the circle
+                    // paper.view.draw();
+                    
+                    return {x: segment.point.x, y: segment.point.y};
                 });
             });
 
