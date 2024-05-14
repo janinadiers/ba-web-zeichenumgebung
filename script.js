@@ -40,12 +40,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     };
 
+    tool.onTouchStart = function(event) {
+        path = new paper.Path();
+        path.strokeColor = 'black';
+        path.add(event.point);
+    }
+
     tool.onMouseDrag = function(event) {
         if (path) {
             path.add(event.point);
         }
         
     };
+
+    tool.onTouchMove = function(event) {
+        if (path) {
+            path.add(event.point);
+        }
+    }
 
     tool.onMouseUp = function(event) {
         
@@ -65,6 +77,26 @@ document.addEventListener('DOMContentLoaded', function() {
             return {x: segment.point.x, y: segment.point.y};
         });
         
+    };
+
+    tool.onTouchEnd = function(event) {
+        traces.push(path.segments.map(function(segment) {
+            return {x: Math.round(segment.point.x), y: Math.round(segment.point.y)};
+        }
+        ));
+        path.segments.map(function(segment) {
+            new paper.Path.Circle({
+                center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
+                radius: 2,       // Radius of the circle
+                fillColor: 'red'  // Color of the circle
+            });
+            // traces.push([segment.point.x, segment.point.y]);
+            // Draw the circle
+            paper.view.draw();
+            
+            return {x: segment.point.x, y: segment.point.y};
+        }
+        );
     };
 
     downloadButton.addEventListener('click', function() {
@@ -120,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             
             // Then draw each trace with points transformed based on the calculated scale
-            traces.forEach(trace => {
+            traces.forEach(function(trace, i) {
                 const points = trace.textContent.trim().split(',').map(point => {
                     const [x, y] = point.split(' ').filter(item => item.trim() !== '');
                     const scaledX = (parseFloat(x) - minX) * scale + offsetX;
@@ -135,18 +167,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     fullySelected: false
                 });
 
-                path.segments.map(function(segment) {
-                    new paper.Path.Circle({
-                        center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
-                        radius: 2,       // Radius of the circle
-                        fillColor: 'red'  // Color of the circle
-                    });
-                    // traces.push([segment.point.x, segment.point.y]);
-                    // Draw the circle
-                    // paper.view.draw();
+                // path.segments.map(function(segment) {
+                //     new paper.Path.Circle({
+                //         center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
+                //         radius: 2,       // Radius of the circle
+                //         fillColor: 'red'  // Color of the circle
+                // });
+
+                // // Calculate the middle point of the path
+                // let middlePoint = path.getPointAt(path.length / 2);
+
+                
                     
-                    return {x: segment.point.x, y: segment.point.y};
-                });
+                //     return {x: segment.point.x, y: segment.point.y};
+                // });
+
+                // Add order of drawn strokes
+                // let text = new paper.PointText({
+                //     point: path.segments[0].point.add([0, -10]), // Position the text above the middle segment
+                //     content: '' + i, // The text content
+                //     fillColor: 'black',
+                //     fontFamily: 'Arial',
+                //     fontWeight: 'bold',
+                //     fontSize: 16
+                // }); 
+                
+
+                // text.justification = 'center'; // Center the text horizontally
             });
 
             paper.view.draw();
