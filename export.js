@@ -7,7 +7,7 @@ export function exportToInkML(traces) {
     inkML += '  </traceFormat>\n';
     traces.forEach((trace, index) => {
         inkML += `  <trace id="${index}">\n`;
-        trace.forEach(coordinate => {
+        trace.points.forEach(coordinate => {
            inkML += `    ${coordinate.x} ${coordinate.y},`;
          });
         inkML += '  </trace>\n';
