@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('zoomIn').addEventListener('click', zoomIn);
     document.getElementById('zoomOut').addEventListener('click', zoomOut);
 
+    let btn = document.createElement('button');
+    btn.textContent = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
+    document.querySelector('menu').appendChild(btn);
+
     const fileInput = document.getElementById('fileInput');
     const uploadInkmlBtn = document.getElementById('upload_inkml_btn');
 
@@ -134,14 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.readAsText(file); // Reads the file's content as a text string
     });  
 
-    // let download_inkml_btn = document.createElement('button')
-    // download_inkml_btn.id = 'download_inkml_btn'
-    // download_inkml_btn.textContent = 'Download in inkml Format'
-    // document.querySelector('menu').appendChild(download_inkml_btn)
-    // download_inkml_btn.addEventListener('click', function() {
-    //     let inkML = exportToInkML(traces);
-    //     downloadInkml('drawing.inkml', inkML);
-    // });
+    let download_inkml_btn = document.getElementById('download_inkml_btn');
+    download_inkml_btn.addEventListener('click', function() {
+        let inkML = exportToInkML(traces);
+        downloadInkml('drawing.inkml', inkML);
+    });
 
 
   

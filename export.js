@@ -1,5 +1,4 @@
 export function exportToInkML(traces) {
-    console.log('trace', traces);
     let inkML = '<?xml version="1.0" encoding="UTF-8"?>\n<ink>\n';
     inkML += '  <traceFormat>\n';
     inkML += '    <channel name="X" type="integer" />\n';
@@ -13,7 +12,6 @@ export function exportToInkML(traces) {
         inkML += '  </trace>\n';
     });
     inkML += '</ink>';
-    console.log(inkML);
     return inkML;
 }
 
@@ -23,7 +21,6 @@ export function exportToPnml(shapes) {
     let rectangles = shapes[1]
     let lines = shapes[2]
 
-    console.log(circles, rectangles, lines);
     
     let pnmlString =
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<pnml>\n<net id="" type="http://www.pnml.org/version-2009/grammar/ptnet">\n<name>\n<text>ILovePetriNets.pnml</text>\n</name>\n<page id="p1">';
@@ -36,6 +33,7 @@ export function exportToPnml(shapes) {
     }
 
     for (const line of lines) {
+        console.log(line);
         let graphics = '<graphics>\n';
         // if (line.coords && line.coords.length > 0) {
         //     for (const coord of line.coords) {
@@ -43,7 +41,7 @@ export function exportToPnml(shapes) {
         //     }
         // }
         graphics += '</graphics>\n';
-        pnmlString += `\n<arc id="${line.shape_id}" source="${line.source.id}" target="${line.target.id}">\n${graphics}\n<inscription><text>1</text></inscription>\n</arc>`;
+        pnmlString += `\n<arc id="${line.shape_id}" source="${line.source_id}" target="${line.target_id}">\n${graphics}\n<inscription><text>1</text></inscription>\n</arc>`;
     }
     pnmlString += '\n</page>\n</net>\n</pnml>';
     return pnmlString;
