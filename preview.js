@@ -13,6 +13,7 @@ function getRandomColor() {
 }
 
 
+
 function get_shapes(recognition_result){
     let circles = []
     let rectangles = []
@@ -255,7 +256,8 @@ function add_buttons_in_preview_mode(){
 }
 
 export function change_to_preview_mode(data, traces, canvas, candidate_colors=undefined){
-    console.log('change to preview mode');
+    console.log('change to preview mode', traces);
+
     remove_buttons_in_preview_mode();
     add_buttons_in_preview_mode();
 
@@ -339,8 +341,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     }
     
     for (let [index, circle] of shapes[0].entries()) {
-        console.log('for circle');
-        console.log(circle);
+       
         let circleElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         let center = {'x': (circle.min_x + circle.max_x) / 2, 'y': (circle.min_y + circle.max_y) / 2};
         circleElement.setAttribute('cx', center.x);
@@ -354,8 +355,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
         
     }
     for (let [index, rectangle] of shapes[1].entries()) {
-        console.log('for rectangle');
-        console.log(rectangle);
+       
         let rectangleElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         let center = {'x': (rectangle.min_x + rectangle.max_x) / 2, 'y': (rectangle.min_y + rectangle.max_y) / 2};
         rectangleElement.setAttribute('x', center.x - 40);
@@ -370,5 +370,5 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
         
     }
 
-
+    
 }

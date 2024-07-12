@@ -1,10 +1,4 @@
-/* #myCanvas {
-    border: 1px solid #ccc;
-    text-align: center;
-    height: 100%;
-    width: 100%;
-    
-} */
+
 
 #myCanvas{
     flex: 1 1 auto;
@@ -50,10 +44,8 @@ menu {
     margin-top: 0;
     width: 100%;
     background-color: #f4f4f4;
-    z-index: 2; /* Higher z-index to ensure menu is above canvas and SVG */
-    position: absolute;
-    top: 0;
-    left: 0;
+    z-index: 2;
+   
 }
 
 
@@ -70,7 +62,7 @@ menu {
 .tooltip {
     position: relative;
     display: inline-block;
-    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    border-bottom: 1px dotted black; 
   }
 
   /* Tooltip text */
@@ -83,14 +75,12 @@ menu {
     padding: 5px 0;
     border-radius: 6px;
   
-    /* Position the tooltip text */
     position: absolute;
     z-index: 1;
     bottom: 125%;
     left: 50%;
     margin-left: -60px;
   
-    /* Fade in tooltip */
     opacity: 0;
     transition: opacity 0.3s;
   }

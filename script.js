@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('zoomIn').addEventListener('click', zoomIn);
     document.getElementById('zoomOut').addEventListener('click', zoomOut);
 
-    let btn = document.createElement('button');
-    btn.textContent = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
-    document.querySelector('menu').appendChild(btn);
+    // let btn = document.createElement('button');
+    // btn.textContent = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
+    // document.querySelector('menu').appendChild(btn);
 
     const fileInput = document.getElementById('fileInput');
     const uploadInkmlBtn = document.getElementById('upload_inkml_btn');
@@ -81,13 +81,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // return new paper.Point((parseFloat(x) - minX) * scale, (parseFloat(y) - minY) * scale);
                 });
                 // generate a random color
-                const color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-                // Create and draw the path
+                // const color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+                // // Create and draw the path
 
                 let inkml_path = new paper.Path({
                     segments: points,
-                    strokeColor: color,
-                    strokeWidth: 2,
+                    strokeColor: 'black',
+                    strokeWidth: 1,
                     fullySelected: false
                 });
 
@@ -115,17 +115,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Add order of drawn strokes
                 // if(i == 60 || i == 61 || i == 62 || i ==63||i==64|| i==65 || i==95){
-                    let text = new paper.PointText({
-                        point: inkml_path.segments[0].point.add([0, -10]), // Position the text above the middle segment
-                        content: '' + i, // The text content
-                        fillColor: color,
-                        fontFamily: 'Arial',
-                        fontWeight: 'bold',
-                        fontSize: 16
-                    });
+                //     let text = new paper.PointText({
+                //         point: inkml_path.segments[0].point.add([0, -10]), // Position the text above the middle segment
+                //         content: '' + i, // The text content
+                //         fillColor: color,
+                //         fontFamily: 'Arial',
+                //         fontWeight: 'bold',
+                //         fontSize: 16
+                //     });
                 
-                    text.justification = 'center'; // Center the text horizontally
-                // }
+                //     text.justification = 'center'; // Center the text horizontally
+                // // }
                
 
 
@@ -307,10 +307,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // });
 
     document.getElementById('preview_btn').addEventListener('click', function() {
-
+        console.log('traces', traces);  
         let inkML = exportToInkML(traces);
+        console.log('inkML', inkML);
         let checkbox = document.getElementById('checkbox');
         let canvasSize = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
+
         fetch('http://127.0.0.1:5000/api/data', {
             method: 'POST',
             headers: {
@@ -325,6 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 change_to_analyse_mode(data, traces, canvas, get_candidate_colors(data));
             }
             else{
+                console.log(data, 'hier passiert der change to preview mode');
                 change_to_preview_mode(data, traces, canvas);
             }
 
