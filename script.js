@@ -202,30 +202,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     };
 
-    tool.onTouchStart = function(event) {
-        
-        if (window.drawingEnabled === false) {
-            return;
-        }
-        path = new paper.Path();
-        // Add stroke color
-        path.strokeColor = 'black';
-        // path.strokeColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-        path.add(event.point);
-        
-    }
 
     tool.onMouseDrag = function(event) {
-        if (window.drawingEnabled === false) {
-            return;
-        }
-        if (path) {
-            path.add(event.point);
-        }
-        
-    };
-
-    tool.onTouchMove = function(event) {
         if (window.drawingEnabled === false) {
             return;
         }
@@ -271,31 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
     };
 
-    tool.onTouchEnd = function(event) {
-        if (window.drawingEnabled === false) {
-            return;
-        }
-        let points = path.segments.map(function(segment) {
-            return {x: segment.point.x, y: segment.point.y};
-        }
-        
-        );
-        traces.push({'points': points, 'path': path});
-
-        path.segments.map(function(segment) {
-            new paper.Path.Circle({
-                center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
-                radius: 2,       // Radius of the circle
-                fillColor: 'red'  // Color of the circle
-            });
-            // traces.push([segment.point.x, segment.point.y]);
-            // Draw the circle
-            paper.view.draw();
-            
-            return {x: segment.point.x, y: segment.point.y};
-        }
-        );
-    };
 
     // let resetButton = document.createElement('button');
     // resetButton.id = 'resetButton';
