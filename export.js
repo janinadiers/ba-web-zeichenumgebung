@@ -1,8 +1,10 @@
-export function exportToInkML(traces) {
+export function exportToInkML(traces, canvasSize) {
     let inkML = '<?xml version="1.0" encoding="UTF-8"?>\n<ink>\n';
     inkML += '  <traceFormat>\n';
     inkML += '    <channel name="X" type="integer" />\n';
     inkML += '    <channel name="Y" type="integer" />\n';
+    inkML += `    <annotation type="canvasWidth">${canvasSize.width}</annotation>\n`;
+    inkML += `    <annotation type="canvasHeight">${canvasSize.height}</annotation>\n`;
     inkML += '  </traceFormat>\n';
     traces.forEach((trace, index) => {
         inkML += `  <trace id="${index}">\n`;
@@ -36,7 +38,6 @@ export function exportToPnml(shapes) {
     }
 
     for (const line of lines) {
-        console.log(line);
         let graphics = '<graphics>\n';
         // if (line.coords && line.coords.length > 0) {
         //     for (const coord of line.coords) {

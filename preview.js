@@ -19,7 +19,6 @@ function get_shapes(recognition_result){
     let rectangles = []
     let lines = []
     for (let item of recognition_result) {
-        console.log(item.shape_name);
        if(item.shape_name === 'circle') {
            circles.push(item)
        }
@@ -27,7 +26,6 @@ function get_shapes(recognition_result){
            rectangles.push(item)
        }
        else if(item.shape_name === 'line') {
-            console.log('line');
            lines.push(item)
             
        }
@@ -49,7 +47,7 @@ function get_candidates(recognition_result){
             rectangles.push(item.candidates)
         }
         else if (item.shape_name === 'line'){
-            lines.push(item.candidates)
+            lines.push(item.candidate)
         }
         
     }
@@ -58,6 +56,7 @@ function get_candidates(recognition_result){
 
 
 function change_to_edit_mode(canvas){
+    console.log('change to edit mode');
     remove_buttons_in_edit_mode();
     add_buttons_in_edit_mode();
     window.drawingEnabled = true;
@@ -101,8 +100,51 @@ export function get_candidate_colors(data){
 
 }
 
-export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
+function change_to_edge_analyse_mode(data, traces, canvas, candidate_colors){
+    console.log('change to edge analyse mode');
+    let line_candidates = get_candidates(data.result)[2];
+   
+   // Remove existing event listeners
+   let nextButton = document.getElementById('next');
+   let newNextButton = nextButton.cloneNode(true);
+   nextButton.parentNode.replaceChild(newNextButton, nextButton);
+   let backButton = document.getElementById('back');
+   let newBackButton = backButton.cloneNode(true);
+   backButton.parentNode.replaceChild(newBackButton, backButton);
+
     
+    for (let [idx,candidate] of line_candidates.entries()) {
+        // find corresponding traces
+        
+        for (let index of candidate){
+            
+            traces[index].path.strokeColor = candidate_colors[2][idx];
+            let midpoint = traces[index].path.getPointAt(traces[index].path.length / 2);
+         
+            let text = new paper.PointText({
+                point: midpoint.add([0, -10]), // Position the text above the middle segment
+                content: '' + index, // The text content
+                fillColor: candidate_colors[2][idx],
+                fontFamily: 'Arial',
+                fontWeight: 'bold',
+                fontSize: 16
+            });
+        
+            text.justification = 'center'; // Center the text horizontally
+        }
+    }
+    newNextButton.addEventListener('click', function() {
+        
+        change_to_preview_mode(data, traces, canvas, candidate_colors);
+    });
+
+    newBackButton.addEventListener('click', function() {
+        change_to_analyse_mode(data, traces, canvas, candidate_colors);
+    });
+}
+
+export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
+    console.log('change to analyse mode');
     remove_buttons_in_analyse_mode();
     add_buttons_in_analyse_mode();
     window.drawingEnabled = false;
@@ -110,21 +152,34 @@ export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
 
     svg.style.display = 'none';
     canvas.style.display = 'block';
+
+    let texts = paper.project.getItems({class: paper.PointText});
+    for (let text of texts){
+        text.remove();
+    }
     
+    // Remove existing event listeners
     let nextButton = document.getElementById('next');
+    let newNextButton = nextButton.cloneNode(true);
+    nextButton.parentNode.replaceChild(newNextButton, nextButton);
     let backButton = document.getElementById('back');
-
-    nextButton.addEventListener('click', function() {
-        change_to_preview_mode(data, traces, canvas, candidate_colors);
-    });
-
-    backButton.addEventListener('click', function() {
-        change_to_edit_mode(canvas);
-    });
+    let newBackButton = backButton.cloneNode(true);
+    backButton.parentNode.replaceChild(newBackButton, backButton);
 
     let circle_candidates = get_candidates(data.result)[0];
     let rectangle_candidates = get_candidates(data.result)[1];
     let line_candidates = get_candidates(data.result)[2];
+
+
+    newNextButton.addEventListener('click', function() {
+        change_to_edge_analyse_mode(data, traces, canvas, candidate_colors);
+    });
+
+    newBackButton.addEventListener('click', function() {
+        change_to_edit_mode(canvas);
+    });
+    
+    
     for (let [idx,candidate] of circle_candidates.entries()) {
         // find corresponding traces
         
@@ -132,7 +187,6 @@ export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
            
             traces[index].path.strokeColor = candidate_colors[0][idx];
             let midpoint = traces[index].path.getPointAt(traces[index].path.length / 2);
-         
             let text = new paper.PointText({
                 point: midpoint.add([0, -10]), // Position the text above the middle segment
                 content: '' + index, // The text content
@@ -161,27 +215,20 @@ export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
             });
         
             text.justification = 'center'; // Center the text horizontally
-
+            
         }
     }
 
+   
     for (let [idx,candidate] of line_candidates.entries()) {
         // find corresponding traces
         
         for (let index of candidate){
-            traces[index].path.strokeColor = candidate_colors[2][idx];
+            
+            traces[index].path.strokeColor = 'black';
             let midpoint = traces[index].path.getPointAt(traces[index].path.length / 2);
          
-            let text = new paper.PointText({
-                point: midpoint.add([0, -10]), // Position the text above the middle segment
-                content: '' + index, // The text content
-                fillColor: candidate_colors[2][idx],
-                fontFamily: 'Arial',
-                fontWeight: 'bold',
-                fontSize: 16
-            });
-        
-            text.justification = 'center'; // Center the text horizontally
+            
         }
     }
 
@@ -208,12 +255,13 @@ function add_buttons_in_edit_mode(){
     download_inkml_btn.style.display = 'block';
     previewButton.style.display = 'block';
     download_inkml_btn.addEventListener('click', function() {
-        console.log('download inkml');
         let inkML = exportToInkML(traces);
         downloadInkml('drawing.inkml', inkML);
     });
 
 }
+
+
 
 function remove_buttons_in_analyse_mode(){
     let upload_inkml_btn = document.getElementById('upload_inkml_btn');
@@ -256,8 +304,7 @@ function add_buttons_in_preview_mode(){
 }
 
 export function change_to_preview_mode(data, traces, canvas, candidate_colors=undefined){
-    console.log('change to preview mode', traces);
-
+    console.log('change to preview mode');
     remove_buttons_in_preview_mode();
     add_buttons_in_preview_mode();
 
@@ -271,8 +318,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     
     backButton.addEventListener('click', function() {
         if(checkbox.checked){
-
-            change_to_analyse_mode(data, traces, canvas, candidate_colors);
+            change_to_edge_analyse_mode(data, traces, canvas, candidate_colors);
         }
         else{
             change_to_edit_mode(canvas);
@@ -280,7 +326,6 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     });
 
     document.getElementById('download_pnml_btn').addEventListener('click', function() {
-        console.log('download pnml');
         let pnml = exportToPnml(shapes);
         
         downloadInkml('petri-net.pnml', pnml);
@@ -292,8 +337,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     // add shapes to svg
 
     for (let [index, line] of shapes[2].entries()) {
-        console.log('for line');
-        console.log(line);
+       
         // Define the arrowhead marker
         let marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
         marker.setAttribute('id', 'arrowhead');
@@ -333,7 +377,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
         }
         // lineElement.setAttribute('x2', center_target.x - 40);
         lineElement.setAttribute('y2', center_target.y);
-        lineElement.setAttribute('stroke','black');
+        lineElement.setAttribute('stroke', candidate_colors ? '' + candidate_colors[2][index]: 'black');
         lineElement.setAttribute('stroke-width', '1');
         lineElement.setAttribute('id', line.shape_id);
         lineElement.setAttribute('marker-end', 'url(#arrowhead)');

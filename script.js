@@ -6,15 +6,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let canvas = document.getElementById('myCanvas');
     window.drawingEnabled = true;
+
+    paper.setup(canvas);
+    let tool = new paper.Tool();
+    let path;
+    let traces = [];
     
     
     // Attach event listeners to buttons
     document.getElementById('zoomIn').addEventListener('click', zoomIn);
     document.getElementById('zoomOut').addEventListener('click', zoomOut);
 
-    // let btn = document.createElement('button');
-    // btn.textContent = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
-    // document.querySelector('menu').appendChild(btn);
 
     const fileInput = document.getElementById('fileInput');
     const uploadInkmlBtn = document.getElementById('upload_inkml_btn');
@@ -29,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.addEventListener('change', function(event) {
         // Everytime a new file is uploaded, we want to have a clean canvas
         paper.project.clear();
-        traces = [];
+       
         const file = event.target.files[0];
         if (!file) {
           return;
@@ -43,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const xml = parser.parseFromString(fileContent, 'text/xml');
             const inkml_traces = xml.querySelectorAll('trace');
             let allPoints = [];
+           
             // // Loop durch die Spuren und zeichne sie auf den Canvas
             inkml_traces.forEach((trace) => {
                 trace = trace.textContent.split(',').filter(item => item.trim() !== '');
@@ -51,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return new paper.Point(parseFloat(x), parseFloat(y)); 
                    
                 })
+                
+                
                 allPoints = allPoints.concat(points);
                 
             });
@@ -78,33 +83,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     const scaledX = (parseFloat(x) - minX) * scale + offsetX;
                     const scaledY = (parseFloat(y) - minY) * scale + offsetY;
                     return new paper.Point(scaledX, scaledY);
-                    // return new paper.Point((parseFloat(x) - minX) * scale, (parseFloat(y) - minY) * scale);
-                });
-                // generate a random color
-                // const color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-                // // Create and draw the path
-
-                let inkml_path = new paper.Path({
-                    segments: points,
-                    strokeColor: 'black',
-                    strokeWidth: 1,
-                    fullySelected: false
                 });
 
-                
+                let inkml_path = new paper.Path();
+                inkml_path.strokeColor = 'black';
+                inkml_path.strokeWidth = 1;
+
+                for (let point of points) {
+                    if (point.x && point.y){
+                        inkml_path.add(point);
+                    }
+                  
+
+                }
+
                 let tracePoints = inkml_path.segments.map(function(segment) {
                     return {x: segment.point.x, y: segment.point.y};
                 });
+
+               
                 traces.push({'points': tracePoints, 'path': inkml_path});  // Save the trace in the global traces array
                 
-
-                // inkml_path.segments.map(function(segment) {
-                //     new paper.Path.Circle({
-                //         center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
-                //         radius: 2,       // Radius of the circle
-                //         fillColor: 'red'  // Color of the circle
-                // });
-
                 // // // Calculate the middle point of the path
                 // let middlePoint = inkml_path.getPointAt(inkml_path.length / 2);
 
@@ -140,35 +139,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let download_inkml_btn = document.getElementById('download_inkml_btn');
     download_inkml_btn.addEventListener('click', function() {
-        let inkML = exportToInkML(traces);
+        let inkML = exportToInkML(traces, {width: canvas.getBoundingClientRect()['width'], height: canvas.getBoundingClientRect()['height']} );
         downloadInkml('drawing.inkml', inkML);
     });
 
 
   
-
-    // let previewButton = document.createElement('button');
-    // let checkbox = document.createElement('input');
-    // let div = document.createElement('div');
-    // checkbox.type = 'checkbox';
-    // checkbox.id = 'checkbox';
-    // checkbox.checked = false;
-    // checkbox.title = 'Analyse mode';
-    // previewButton.id = 'previewButton';
-    // previewButton.textContent = 'Preview';
-    
-    // div.appendChild(previewButton)
-    // div.appendChild(checkbox);
-    // document.querySelector('menu').appendChild(div);
-    
-    
-    paper.setup(canvas);
-    let tool = new paper.Tool();
-    let path;
-    let traces = [];
-
-   
-
     // Function to handle zoom in
     function zoomIn() {
         paper.view.scale(1.1, paper.view.center); // Zoom in by 10%
@@ -193,10 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.drawingEnabled === false) {
             return;
         }
-        // timeStamps.push(Date.now());
         path = new paper.Path();
         path.strokeColor = 'black';
-        // path.strokeColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
         path.add(event.point);
         
     
@@ -220,17 +194,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let points = path.segments.map(function(segment) {
             return {x: segment.point.x, y: segment.point.y};
         })
-       
         traces.push({'points': points, 'path': path});
-        // Add text displaying the trace index
-        // let text = new paper.PointText({
-        //     point: event.point,
-        //     content: (traces.length - 1).toString(),
-        //     fillColor: 'black',
-        //     fontFamily: 'Arial',
-        //     fontWeight: 'bold',
-        //     fontSize: 15
-        // });
+       
 
 // --------------------------------------------------->>>>>>>>>>>>> ROTE PUNKTE
 
@@ -249,23 +214,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
     };
 
-
-    // let resetButton = document.createElement('button');
-    // resetButton.id = 'resetButton';
-    // resetButton.textContent = 'Reset';
-    // document.querySelector('menu').appendChild(resetButton);
-    // resetButton.addEventListener('click', function() {
-    //     console.log('Reset button clicked', traces, path);
-    //     traces.pop();
-    // });
-
     document.getElementById('preview_btn').addEventListener('click', function() {
-        console.log('traces', traces);  
-        let inkML = exportToInkML(traces);
-        console.log('inkML', inkML);
         let checkbox = document.getElementById('checkbox');
         let canvasSize = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
-
+        let inkML = exportToInkML(traces, {width: canvas.getBoundingClientRect()['width'], height: canvas.getBoundingClientRect()['height']});
         fetch('http://127.0.0.1:5000/api/data', {
             method: 'POST',
             headers: {
@@ -280,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 change_to_analyse_mode(data, traces, canvas, get_candidate_colors(data));
             }
             else{
-                console.log(data, 'hier passiert der change to preview mode');
+             
                 change_to_preview_mode(data, traces, canvas);
             }
 
