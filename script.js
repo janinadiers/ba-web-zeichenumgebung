@@ -1,3 +1,4 @@
+
 import {exportToInkML, downloadInkml, exportToPnml, downloadPnml} from './export.js';
 import {change_to_preview_mode, change_to_analyse_mode, get_candidate_colors} from './preview.js';
 
@@ -29,9 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     resetBtn.addEventListener('click', function() {
-        // get last trace
         let last_trace = traces[traces.length - 1];
+        console.log(last_trace);
         last_trace.path.remove()
+        traces.pop();
     });
 
     fileInput.addEventListener('change', function(event) {
