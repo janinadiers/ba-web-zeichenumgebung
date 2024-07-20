@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let canvas = document.getElementById('myCanvas');
     window.drawingEnabled = true;
+    window.previewModeActive = false;
 
     paper.setup(canvas);
     let tool = new paper.Tool();
@@ -20,13 +21,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const fileInput = document.getElementById('fileInput');
     const uploadInkmlBtn = document.getElementById('upload_inkml_btn');
+    const resetBtn = document.getElementById('reset');
 
     uploadInkmlBtn.addEventListener('click', function() {
 
         fileInput.click();
     });
 
-    
+    resetBtn.addEventListener('click', function() {
+        // get last trace
+        let last_trace = traces[traces.length - 1];
+        last_trace.path.remove()
+    });
 
     fileInput.addEventListener('change', function(event) {
         // Everytime a new file is uploaded, we want to have a clean canvas
@@ -86,7 +92,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 let inkml_path = new paper.Path();
-                inkml_path.strokeColor = 'black';
+                let color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+
+                // if (i == 17 || i == 18 || i == 19 || i == 20 || i == 21 || i == 22 || i == 23 || i == 24){
+
+                // if ( i == 15 || i == 16 || i == 17){
+                    // random color
+                    inkml_path.strokeColor = color;
+                   
+                //  }
+                // else{
+                // inkml_path.strokeColor = 'black';
+                // }
                 inkml_path.strokeWidth = 1;
 
                 for (let point of points) {
@@ -113,19 +130,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 // });
 
                 // Add order of drawn strokes
-                // if(i == 60 || i == 61 || i == 62 || i ==63||i==64|| i==65 || i==95){
-                //     let text = new paper.PointText({
-                //         point: inkml_path.segments[0].point.add([0, -10]), // Position the text above the middle segment
-                //         content: '' + i, // The text content
-                //         fillColor: color,
-                //         fontFamily: 'Arial',
-                //         fontWeight: 'bold',
-                //         fontSize: 16
-                //     });
+                // i == 30 || i == 31 || i == 32 || i == 33 || i == 34 || i == 35 ||
+                // if ( i == 15 || i == 16 || i == 17){
+                    // visualize the points in yellow
+                    // inkml_path.segments.map(function(segment) {
+                    //     new paper.Path.Circle({
+                    //         center: [segment.point.x, segment.point.y], // Center position x, y on the canvas
+                    //         radius: 2,       // Radius of the circle
+                    //         fillColor: 'yellow'  // Color of the circle
+                    //     });
+                    // })  
+                  
+                 
+                //     if (i == 17 || i == 18 || i == 19 || i == 20 || i == 21 || i == 22 || i == 23 || i == 24){
+                    let text = new paper.PointText({
+                        point: inkml_path.segments[0].point.add([0, -10]), // Position the text above the middle segment
+                        content: '' + i, // The text content
+                        fillColor: color, // The color of the text
+                        fontFamily: 'Arial',
+                        fontWeight: 'bold',
+                        fontSize: 16
+                    });
                 
-                //     text.justification = 'center'; // Center the text horizontally
-                // // }
-               
+                    text.justification = 'center'; // Center the text horizontally
+                
+                //  }
 
 
             });
@@ -144,15 +173,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-  
+    let scale = 1;
+    function applyTransform() {
+        const svg = document.getElementById('svg');
+        svg.setAttribute('transform', `scale(${scale})`);
+    }
+
     // Function to handle zoom in
     function zoomIn() {
-        paper.view.scale(1.1, paper.view.center); // Zoom in by 10%
+        if (window.previewModeActive){
+            
+            scale *= 1.2;
+            applyTransform();
+        
+        }
+        else{
+            paper.view.scale(1.1, paper.view.center); // Zoom in by 10%
+
+        }
     }
 
     // Function to handle zoom out
     function zoomOut() {
-        paper.view.scale(0.9, paper.view.center); // Zoom out by 10%
+        if (window.previewModeActive){
+            scale /= 1.2;
+            applyTransform();
+        }
+        else{
+            paper.view.scale(0.9, paper.view.center); // Zoom out by 10%
+
+        }
     }
 
     // // paper.view.setViewSize(canvas.getBoundingClientRect()['width'], canvas.getBoundingClientRect()['height']);

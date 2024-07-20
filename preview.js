@@ -307,7 +307,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     console.log('change to preview mode');
     remove_buttons_in_preview_mode();
     add_buttons_in_preview_mode();
-
+    window.previewModeActive = true;
     let shapes = get_shapes(data.result);
            
     let svg = document.getElementById('svg');
@@ -317,6 +317,7 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     let checkbox = document.getElementById('checkbox');
     
     backButton.addEventListener('click', function() {
+        window.previewModeActive = false;
         if(checkbox.checked){
             change_to_edge_analyse_mode(data, traces, canvas, candidate_colors);
         }
