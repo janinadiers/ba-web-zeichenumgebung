@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.addEventListener('change', function(event) {
         // Everytime a new file is uploaded, we want to have a clean canvas
         paper.project.clear();
-       
+        traces = [];
         const file = event.target.files[0];
         if (!file) {
           return;
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // if ( i == 15 || i == 16 || i == 17){
                     // random color
-                    inkml_path.strokeColor = color;
+                    inkml_path.strokeColor = 'black';
                    
                 //  }
                 // else{
@@ -144,17 +144,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     // })  
                   
                  
-                //     if (i == 17 || i == 18 || i == 19 || i == 20 || i == 21 || i == 22 || i == 23 || i == 24){
-                    let text = new paper.PointText({
-                        point: inkml_path.segments[0].point.add([0, -10]), // Position the text above the middle segment
-                        content: '' + i, // The text content
-                        fillColor: color, // The color of the text
-                        fontFamily: 'Arial',
-                        fontWeight: 'bold',
-                        fontSize: 16
-                    });
+                // if (i == 1){
+                    // let text = new paper.PointText({
+                    //     point: inkml_path.segments[0].point.add([0, -10]), // Position the text above the middle segment
+                    //     content: '' + i, // The text content
+                    //     fillColor: color, // The color of the text
+                    //     fontFamily: 'Arial',
+                    //     fontWeight: 'bold',
+                    //     fontSize: 16
+                    // });
                 
-                    text.justification = 'center'; // Center the text horizontally
+                    // text.justification = 'center'; // Center the text horizontally
                 
                 //  }
 
@@ -270,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let checkbox = document.getElementById('checkbox');
         let canvasSize = '' + canvas.getBoundingClientRect()['width'] + '/' + canvas.getBoundingClientRect()['height'];
         let inkML = exportToInkML(traces, {width: canvas.getBoundingClientRect()['width'], height: canvas.getBoundingClientRect()['height']});
+        
         fetch('http://127.0.0.1:5000/api/data', {
             method: 'POST',
             headers: {
@@ -280,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             if(checkbox.checked) {
                 change_to_analyse_mode(data, traces, canvas, get_candidate_colors(data));
             }
