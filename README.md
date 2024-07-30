@@ -1,4 +1,3 @@
-Works together with https://github.com/janinadiers/ba-petrinet-recognizer.
-First start backend Server on https://github.com/janinadiers/ba-petrinet-recognizer.
-npm install
-start localhost
+1. Works together with https://github.com/janinadiers/ba-petrinet-recognizer.
+2. First start backend Server on https://github.com/janinadiers/ba-petrinet-recognizer.
+3. start localhost
