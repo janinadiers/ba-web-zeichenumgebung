@@ -60,10 +60,7 @@ function change_to_edit_mode(canvas){
     remove_buttons_in_edit_mode();
     add_buttons_in_edit_mode();
     window.drawingEnabled = true;
-    let svg = document.getElementById('svg');
-
-    svg.style.display = 'none';
-    canvas.style.display = 'block';
+    
     // remove colors from paths and texts
     let paths = paper.project.getItems({class: paper.Path});
     for (let path of paths){
@@ -71,6 +68,7 @@ function change_to_edit_mode(canvas){
     }
     let texts = paper.project.getItems({class: paper.PointText});
     for (let text of texts){
+        console.log(text);
         text.remove();
     }
 }
@@ -111,7 +109,7 @@ function change_to_edge_analyse_mode(data, traces, canvas, candidate_colors){
    let backButton = document.getElementById('back');
    let newBackButton = backButton.cloneNode(true);
    backButton.parentNode.replaceChild(newBackButton, backButton);
-
+  
     
     for (let [idx,candidate] of line_candidates.entries()) {
         // find corresponding traces
@@ -148,10 +146,7 @@ export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
     remove_buttons_in_analyse_mode();
     add_buttons_in_analyse_mode();
     window.drawingEnabled = false;
-    let svg = document.getElementById('svg');
-
-    svg.style.display = 'none';
-    canvas.style.display = 'block';
+    
 
     let texts = paper.project.getItems({class: paper.PointText});
     for (let text of texts){
@@ -240,9 +235,11 @@ export function change_to_analyse_mode(data, traces, canvas, candidate_colors){
 function remove_buttons_in_edit_mode(){
     let backButton = document.getElementById('back');
     let nextButton = document.getElementById('next');
+   
     let pnml_download_btn = document.getElementById('download_pnml_btn');
     backButton.style.display = 'none';
     nextButton.style.display = 'none';
+   
     pnml_download_btn.style.visibility = 'hidden';
 
 }
@@ -251,9 +248,11 @@ function add_buttons_in_edit_mode(){
     let upload_inkml_btn = document.getElementById('upload_inkml_btn');
     let download_inkml_btn = document.getElementById('download_inkml_btn');
     let previewButton = document.getElementById('wrapper');
+    let undoButton = document.getElementById('reset');
     upload_inkml_btn.style.display = 'block';
     download_inkml_btn.style.display = 'block';
     previewButton.style.display = 'block';
+    undoButton.style.display = 'block';
     download_inkml_btn.addEventListener('click', function() {
         let inkML = exportToInkML(traces);
         downloadInkml('drawing.inkml', inkML);
@@ -268,10 +267,12 @@ function remove_buttons_in_analyse_mode(){
     let download_inkml_btn = document.getElementById('download_inkml_btn');
     let previewButton = document.getElementById('wrapper');
     let pnml_download_btn = document.getElementById('download_pnml_btn');
+    let undoButton = document.getElementById('reset');
     upload_inkml_btn.style.display = 'none';
     download_inkml_btn.style.display = 'none';
     previewButton.style.display = 'none';
     pnml_download_btn.style.visibility = 'hidden';
+    undoButton.style.display = 'none';
 
 }
 
@@ -288,10 +289,12 @@ function remove_buttons_in_preview_mode(){
     let upload_inkml_btn = document.getElementById('upload_inkml_btn');
     let download_inkml_btn = document.getElementById('download_inkml_btn');
     let previewButton = document.getElementById('wrapper');
+    let undoButton = document.getElementById('reset');
     nextButton.style.visibility = 'hidden';
     upload_inkml_btn.style.display = 'none';
     download_inkml_btn.style.display = 'none';
     previewButton.style.display = 'none';
+    undoButton.style.display = 'none';
 
 }
 
@@ -309,19 +312,22 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
     add_buttons_in_preview_mode();
     window.previewModeActive = true;
     let shapes = get_shapes(data.result);
-           
-    let svg = document.getElementById('svg');
-    
+    let texts = []; 
+  
     let backButton = document.getElementById('back');
-
+    
     let checkbox = document.getElementById('checkbox');
     
     backButton.addEventListener('click', function() {
         window.previewModeActive = false;
         if(checkbox.checked){
+            for(let text of texts){
+                text.remove();
+            }
             change_to_edge_analyse_mode(data, traces, canvas, candidate_colors);
         }
         else{
+            
             change_to_edit_mode(canvas);
         }
     });
@@ -332,87 +338,80 @@ export function change_to_preview_mode(data, traces, canvas, candidate_colors=un
         downloadInkml('petri-net.pnml', pnml);
     });
 
-    svg.style.display = 'block';
-    canvas.style.display = 'none';
                   
     // add shapes to svg
 
+    // find all traces for shape and add textelement with id of shape
+
     for (let [index, line] of shapes[2].entries()) {
        
-        // Define the arrowhead marker
-        let marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        marker.setAttribute('id', 'arrowhead');
-        marker.setAttribute('markerWidth', '10');
-        marker.setAttribute('markerHeight', '7');
-        marker.setAttribute('refX', '10');
-        marker.setAttribute('refY', '3.5');
-        marker.setAttribute('orient', 'auto');
-
-        // Define the arrowhead shape
-        let arrowhead = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        arrowhead.setAttribute('points', '0 0, 10 3.5, 0 7');
-        arrowhead.setAttribute('fill', 'black');
-        marker.appendChild(arrowhead);
-
-        let defs = svg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            svg.appendChild(defs);
-        }
-        
-        // Append marker to defs if not already present
-        if (!document.getElementById('arrowhead')) {
-            defs.appendChild(marker);
-        }
-       
-        let lineElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        let center_source = {'x': (line.source_min_x + line.source_max_x) / 2, 'y': (line.source_min_y + line.source_max_y) / 2};
-        let center_target = {'x': (line.target_min_x + line.target_max_x) / 2, 'y': (line.target_min_y + line.target_max_y) / 2};
-        lineElement.setAttribute('x1', center_source.x);
-        lineElement.setAttribute('y1', center_source.y);
-        if (line.source_min_x < line.target_min_x){
-            lineElement.setAttribute('x2', center_target.x - 40);
-        }
-        else{
-            lineElement.setAttribute('x2', center_target.x + 40);
-        }
-        // lineElement.setAttribute('x2', center_target.x - 40);
-        lineElement.setAttribute('y2', center_target.y);
-        lineElement.setAttribute('stroke', candidate_colors ? '' + candidate_colors[2][index]: 'black');
-        lineElement.setAttribute('stroke-width', '1');
-        lineElement.setAttribute('id', line.shape_id);
-        lineElement.setAttribute('marker-end', 'url(#arrowhead)');
-        svg.appendChild(lineElement);
+        let shape_traces = traces.filter((trace, idx) => line.candidate.includes(idx));
+        console.log(line, shape_traces);
+        // // Create a new text item and add it to the project
+        let textItem = new paper.PointText({
+            content: '' + line.source_id + ' to ' + line.target_id, // The text content
+            point: shape_traces[0].path.segments[Math.floor(shape_traces[0].path.segments.length / 2)].point.add([10, -10]), // Starting position of the text
+            fillColor: 'black',
+            fontFamily: 'Arial',
+            fontWeight: 'bold',
+            fontSize: 20,
+            justification: 'center'
+        });
+        texts.push(textItem);
+        // // Add everything to the paper.js project
+        paper.view.draw();
+     
     }
     
     for (let [index, circle] of shapes[0].entries()) {
+        let shape_traces = traces.filter((trace, idx) => circle.candidates.includes(idx));
        
-        let circleElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        let center = {'x': (circle.min_x + circle.max_x) / 2, 'y': (circle.min_y + circle.max_y) / 2};
-        circleElement.setAttribute('cx', center.x);
-        circleElement.setAttribute('cy', center.y);
-        circleElement.setAttribute('r', '40');
-        circleElement.setAttribute('fill', 'white');
-        circleElement.setAttribute('stroke',  candidate_colors ? '' + candidate_colors[0][index]: 'black');
-        circleElement.id = circle.shape_id;
-        svg.appendChild(circleElement);
+        // Create a new text item and add it to the project
+        let textItem = new paper.PointText({
+            content: '' + circle.shape_id,
+            point: shape_traces[0].path.segments[0].point.add([0, -10]), // Starting position of the text
+            fillColor: 'black',
+            fontFamily: 'Arial',
+            fontWeight: 'bold',
+            fontSize: 20,
+            justification: 'center'
+        });
+        texts.push(textItem);
+        // Add everything to the paper.js project
+        paper.view.draw();
+       
         
         
     }
     for (let [index, rectangle] of shapes[1].entries()) {
-       
-        let rectangleElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        let center = {'x': (rectangle.min_x + rectangle.max_x) / 2, 'y': (rectangle.min_y + rectangle.max_y) / 2};
-        rectangleElement.setAttribute('x', center.x - 40);
-        rectangleElement.setAttribute('y', center.y - 40);
-        rectangleElement.setAttribute('width', '80');
-        rectangleElement.setAttribute('height', '80');
-        rectangleElement.setAttribute('fill', 'white');
-        rectangleElement.setAttribute('stroke', candidate_colors ? '' + candidate_colors[1][index]: 'black');
-        rectangleElement.setAttribute('id', rectangle.shape_id);
-        svg.appendChild(rectangleElement);
-
+        let shape_traces = traces.filter((trace, idx) => rectangle.candidates.includes(idx));
+        // Create a new text item and add it to the project
+        let textItem = new paper.PointText({
+            content: '' + rectangle.shape_id,
+            point: shape_traces[0].path.segments[0].point.add([0, -10]), // Starting position of the text
+            fillColor: 'black',
+            fontFamily: 'Arial',
+            fontWeight: 'bold',
+            fontSize: 20,
+            justification: 'center'
+        });
+        texts.push(textItem);
+        // Add everything to the paper.js project
+        paper.view.draw();
         
+    }
+
+    const errors = data.result
+    .filter(obj => 'error' in obj) // Filter objects that contain the key
+    .map(obj => obj['error']); 
+    
+    if (errors.length > 0){
+        let messages = ''
+        for (let error of errors){
+            messages += error + '\n';
+        }
+        
+        alert(messages);
     }
 
     

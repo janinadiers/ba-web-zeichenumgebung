@@ -175,47 +175,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    let scale = 1;
-    function applyTransform() {
-        const svg = document.getElementById('svg');
-        svg.setAttribute('transform', `scale(${scale})`);
-    }
+    
+   
 
     // Function to handle zoom in
     function zoomIn() {
-        if (window.previewModeActive){
-            
-            scale *= 1.2;
-            applyTransform();
         
-        }
-        else{
             paper.view.scale(1.1, paper.view.center); // Zoom in by 10%
 
-        }
+        
     }
 
     // Function to handle zoom out
     function zoomOut() {
-        if (window.previewModeActive){
-            scale /= 1.2;
-            applyTransform();
-        }
-        else{
+        
+        
             paper.view.scale(0.9, paper.view.center); // Zoom out by 10%
 
-        }
+        
     }
-
-    // // paper.view.setViewSize(canvas.getBoundingClientRect()['width'], canvas.getBoundingClientRect()['height']);
-    // if (window.devicePixelRatio) {
-    //             canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-    //             canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-    //             canvas.style.width = canvas.offsetWidth + 'px';
-    //             canvas.style.height = canvas.offsetHeight + 'px';
-    //             paper.view.setViewSize(canvas.width, canvas.height);
-    //         }
-
 
     tool.onMouseDown = function(event) {
         if (window.drawingEnabled === false) {
